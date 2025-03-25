@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Multitarget .NET 8 and .NET Framework 4.72 on Windows 11 or higher.
+      https://learn.microsoft.com/dotnet/standard/frameworks
+
+      Because we're multitargeting, we need to specify SupportedPlatform
+      to get proper platform compatibility warnings.
+      https://learn.microsoft.com/dotnet/standard/analyzers/platform-compat-analyzer
+    -->
+    <TargetFrameworks>net8.0-windows10.0.22000.0;net472</TargetFrameworks>
+    <SupportedPlatform>windows10.0.22000.0</SupportedPlatform>
+
+    <!--
+     We don't want to have implicit usings as we're retargeting System.IO to Microsoft.IO
+     in our GlobalUsings.cs file for .NET 4.7.2.
+    -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Multitarget</RootNamespace>
+
+    <!--
+     Modifying default items to exclude the Framework items if not building for .NET Framework.
+    -->
+    <DefaultItemExcludes Condition="'$(TargetFramework)' != 'net472'">$(DefaultItemExcludes);**/Framework/*</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
+    <!-- Include the Framework specific items as none so we can see them easily in the Solution Explorer. -->
+    <None Include="**/Framework/*"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+    <!-- This gets us .NET 6 System.IO repackaged for .NET Framework. -->
+    <PackageReference Include="Microsoft.IO.Redist" Version="6.1.2" />
+    <!-- This gets us Span. -->
+    <PackageReference Include="System.Memory" Version="4.6.2" />
+  </ItemGroup>
+
+</Project>
